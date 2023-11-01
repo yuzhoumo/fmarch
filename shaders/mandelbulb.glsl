@@ -84,21 +84,47 @@ float get_light(vec3 p) {
 
 void main() {
   if (u_supersample == 1) {
-  float aspect_ratio = u_resolution.x / u_resolution.y;
-  float scale = tan(radians(u_fov * 0.5));
-  vec2 uv_offset4x[4] = vec2[](vec2(-0.5, -0.5), vec2(0.5, -0.5), vec2(-0.5, 0.5), vec2(0.5, 0.5));
-  vec2 uv_offset[8] = vec2[](
+    float aspect_ratio = u_resolution.x / u_resolution.y;
+    float scale = tan(radians(u_fov * 0.5));
+
+    vec2 uv_offset4x[4] = vec2[](
+	  vec2(-0.5, -0.5), vec2(0.5, -0.5), vec2(-0.5, 0.5), vec2(0.5, 0.5));
+
+    vec2 uv_offset8x[8] = vec2[](
       vec2(-0.25, -0.25), vec2(0.25, -0.25), vec2(-0.25, 0.25), vec2(0.25, 0.25),
       vec2(-0.5, -0.5), vec2(0.5, -0.5), vec2(-0.5, 0.5), vec2(0.5, 0.5));
-  vec2 uv_offset16x[16] = vec2[](
+
+    vec2 uv_offset16x[16] = vec2[](
       vec2(-0.25, -0.25), vec2(0.25, -0.25), vec2(-0.25, 0.25), vec2(0.25, 0.25),
       vec2(-0.5, -0.5), vec2(0.5, -0.5), vec2(-0.5, 0.5), vec2(0.5, 0.5),
       vec2(-0.75, -0.75), vec2(0.75, -0.75), vec2(-0.75, 0.75), vec2(0.75, 0.75),
       vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0));
-  int num_samples = 8;
-  vec3 color = vec3(0.0);
-  for (int i = 0; i < num_samples; ++i) {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy + uv_offset[i] * 0.5) / u_resolution.y;
+
+    int num_samples = 16; // temp: hardcode this
+
+    vec3 color = vec3(0.0);
+    for (int i = 0; i < num_samples; ++i) {
+      vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy + uv_offset16x[i] * 0.5) / u_resolution.y;
+      vec3 ro = u_camera_pos;
+
+      vec3 rd = normalize(
+        u_camera_right * uv.x * scale * aspect_ratio + u_camera_up * uv.y * scale + u_camera_front);
+
+      float d = ray_march(ro, rd);
+      vec3 p = ro + rd * d;
+      float dif = get_light(p);
+
+      color += vec3(dif);
+    }
+
+    color /= num_samples;
+    o_frag_color = vec4(pow(color, vec3(0.4545)), 1.0);
+  } else {
+    vec3 color = vec3(0.0);
+    float aspect_ratio = u_resolution.x / u_resolution.y;
+    float scale = tan(radians(u_fov * 0.5));
+
+    vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
     vec3 ro = u_camera_pos;
 
     vec3 rd = normalize(
@@ -108,30 +134,10 @@ void main() {
     vec3 p = ro + rd * d;
     float dif = get_light(p);
 
-    color += vec3(dif);
+    color += pow(vec3(dif), vec3(0.4545));
+    float a = d / MAX_DIST;
+    color += (1.0 - a) * color * 0.3 + a * vec3(0.2f, 0.3f, 0.3f) * 0.7;
+
+    o_frag_color = vec4(color, 1.0);
   }
-
-  color /= num_samples;
-  o_frag_color = vec4(pow(color, vec3(0.4545)), 1.0);
-} else {
-  vec3 color = vec3(0.0);
-  float aspect_ratio = u_resolution.x / u_resolution.y;
-  float scale = tan(radians(u_fov * 0.5));
-
-  vec2 uv = (gl_FragCoord.xy - 0.5 * u_resolution.xy) / u_resolution.y;
-  vec3 ro = u_camera_pos;
-
-  vec3 rd = normalize(
-    u_camera_right * uv.x * scale * aspect_ratio + u_camera_up * uv.y * scale + u_camera_front);
-
-  float d = ray_march(ro, rd);
-  vec3 p = ro + rd * d;
-  float dif = get_light(p);
-
-  color += pow(vec3(dif), vec3(0.4545));
-  float a = d / MAX_DIST;
-  color += (1.0 - a) * color * 0.3 + a * vec3(0.2f, 0.3f, 0.3f) * 0.7;
-
-  o_frag_color = vec4(color, 1.0);
-}
 }
