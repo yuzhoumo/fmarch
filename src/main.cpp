@@ -22,7 +22,10 @@ void createGLcontexts(GLFWwindow*& window) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  /* set error callback before window creation */ 
+  /* fix macos hdpi scaling issue */
+  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);
+
+  /* set error callback before window creation */
   glfwSetErrorCallback(callbacks::error);
 
   window = glfwCreateWindow(WINDOW_DEFAULT_WIDTH, WINDOW_DEFAULT_HEIGHT,
