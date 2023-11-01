@@ -1,6 +1,8 @@
-# Fractal Raymarcher
+# fmarch
 
-[WIP] OpenGL real-time fractal renderer using raymarching.
+Real-time OpenGL fractal renderer using raymarching
+
+![mandelbulb-screenshot](assets/mandelbulb.png)
 
 ## Cloning
 
@@ -8,7 +10,7 @@ External dependencies are included as git submodules in `lib`. Clone source
 files and dependencies using:
 
 ```
-git clone git@github.com:yuzhoumo/fractal-raymarcher.git --recursive
+git clone git@github.com:yuzhoumo/fmarch.git --recursive
 ```
 
 Note: If using NixOS, there is no need for the `--recursive` flag since
