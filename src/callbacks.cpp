@@ -19,9 +19,9 @@ void key(GLFWwindow* window, int key, int scancode, int action, int mods) {
   /* toggle mouse input with M key */
   if (key == GLFW_KEY_M && action == GLFW_PRESS) {
     Display& display = Display::getInstance();
-    glfwSetInputMode(window, GLFW_CURSOR, display.hide_cursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-    display.hide_cursor = !display.hide_cursor;
-    display.is_first_mouse_input = display.hide_cursor;
+    glfwSetInputMode(window, GLFW_CURSOR, display.capture_cursor ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+    display.capture_cursor = !display.capture_cursor;
+    display.is_first_mouse_input = display.capture_cursor;
   }
 
   /* toggle supersampling with P key */
@@ -37,7 +37,7 @@ void cursorPos(GLFWwindow* window, double xpos, double ypos) {
 
   Display& display = Display::getInstance();
 
-  if (!display.hide_cursor) return;
+  if (!display.capture_cursor) return;
 
   /* to prevent camera jerking on first mouse entry, set previous mouse
    * coordinates to the current mouse position */
